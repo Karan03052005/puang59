@@ -5,6 +5,8 @@ function SpellCheckerApp() {
   const [message, setMessage] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [meaning, setMeaning] = useState("");
+  const [example, setExample] = useState("");
 
   const checkWord = async () => {
     if (!word.trim()) {
@@ -15,14 +17,16 @@ function SpellCheckerApp() {
     setLoading(true);
     setMessage("");
     setSuggestions([]);
+    setMeaning("");
+    setExample("");
 
     try {
       const res = await axios.post("http://localhost:5000/api/check-word", { word });
       const data = res.data;
 
       if (data.correct) {
-        setMessage(`✅ "${word}" is correct! Proceeding to generate meaning and examples...`);
-        // You can trigger your "generate meaning" API here later
+        setMessage(`✅ "${word}" is correct!`);
+        await fetchMeaning(word);
       } else {
         setMessage(`❌ "${word}" is not correct. Suggestions:`);
         setSuggestions(data.suggestions);
@@ -35,11 +39,24 @@ function SpellCheckerApp() {
     }
   };
 
-  const handleSuggestionClick = (suggestedWord) => {
+  const fetchMeaning = async (selectedWord) => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/meaning", { word: selectedWord });
+      const data = res.data;
+      setMeaning(data.meaning);
+      setExample(data.example);
+    } catch (err) {
+      console.error(err);
+      setMeaning("❌ Meaning not found.");
+      setExample("");
+    }
+  };
+
+  const handleSuggestionClick = async (suggestedWord) => {
     setWord(suggestedWord);
-    setMessage(`✅ Selected "${suggestedWord}". Now generating meaning and examples...`);
+    setMessage(`✅ Selected "${suggestedWord}"`);
     setSuggestions([]);
-    // You can trigger meaning/example generation here too
+    await fetchMeaning(suggestedWord);
   };
 
   return (
@@ -50,6 +67,7 @@ function SpellCheckerApp() {
         placeholder="Enter a word..."
         value={word}
         onChange={(e) => setWord(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && checkWord()}
         style={{
           padding: "10px",
           fontSize: "16px",
@@ -76,6 +94,7 @@ function SpellCheckerApp() {
 
       <div style={{ marginTop: "30px" }}>
         <p>{message}</p>
+
         {suggestions.length > 0 && (
           <ul style={{ listStyle: "none", padding: 0 }}>
             {suggestions.map((s, i) => (
@@ -97,6 +116,15 @@ function SpellCheckerApp() {
               </li>
             ))}
           </ul>
+        )}
+
+        {meaning && (
+          <div style={{ marginTop: "20px", textAlign: "left", display: "inline-block" }}>
+            <h3>📖 Meaning:</h3>
+            <p>{meaning}</p>
+            <h4>💬 Example:</h4>
+            <p>{example}</p>
+          </div>
         )}
       </div>
     </div>

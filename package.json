@@ -16,5 +16,16 @@
     "nspell": "^2.1.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Karan03052005/puang59.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Karan03052005/puang59/issues"
+  },
+  "homepage": "https://github.com/Karan03052005/puang59#readme"
 }
